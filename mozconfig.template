@@ -1,0 +1,66 @@
+# Target path
+mk_add_options MOZ_OBJDIR=/build/obj
+
+# Build identity
+ac_add_options --enable-application=browser
+ac_add_options --with-app-basename=Waterfox
+ac_add_options --enable-update-channel=release
+ac_add_options --with-branding=waterfox/browser/branding
+
+# Target platform
+ac_add_options --host=x86_64-alpine-linux-musl
+ac_add_options --target=x86_64-alpine-linux-musl
+
+# Optimisation (matches official Waterfox baseline)
+ac_add_options "--enable-optimize=@OPTIMIZE_FLAGS@"
+ac_add_options --enable-release
+ac_add_options --enable-lto
+ac_add_options --enable-linker=lld
+ac_add_options --enable-rust-simd
+ac_add_options --enable-strip
+ac_add_options --enable-hardening
+ac_add_options --enable-packed-relative-relocs
+
+# Toolkit
+ac_add_options "--enable-default-toolkit=@TOOLKIT@"
+
+# musl-safe feature set
+ac_add_options --disable-jemalloc
+ac_add_options --disable-elf-hack
+ac_add_options --disable-tests
+ac_add_options --disable-crashreporter
+ac_add_options --disable-updater
+ac_add_options --disable-install-strip
+
+# System libraries available on Alpine musl
+ac_add_options --with-system-nss
+ac_add_options --with-system-icu
+ac_add_options --with-system-webp
+ac_add_options --with-system-jpeg
+ac_add_options --with-system-zlib
+ac_add_options --with-system-ffi
+ac_add_options --with-system-libevent
+ac_add_options --enable-system-pixman
+ac_add_options --with-system-pixman
+
+# Audio: one binary covers ALSA and PulseAudio
+ac_add_options --enable-audio-backends=alsa,pulseaudio
+
+# Audio codecs
+ac_add_options --enable-ffmpeg
+
+# WASM sandboxing
+ac_add_options --with-wasi-sysroot=/usr/share/wasi-sysroot
+
+# Compiler
+export CC=clang-22
+export CXX=clang++-22
+export AR=llvm-ar
+export NM=llvm-nm
+export RANLIB=llvm-ranlib
+export MOZILLA_OFFICIAL=1
+export MOZ_APP_VERSION="@WATERFOX_VERSION@"
+#export MOZ_STDCXX_COMPAT=1
+export RUSTFLAGS="-Ctarget-cpu=@RUST_CPU@"
+export RUSTC_OPT_LEVEL=3
+export ASFLAGS=--target=x86_64-alpine-linux-musl

@@ -1,0 +1,12 @@
+diff --git a/browser/branding/unofficial/configure.sh b/browser/branding/unofficial/configure.sh
+index f42e11ddad..9f46af5fa0 100644
+--- a/browser/branding/unofficial/configure.sh
++++ b/browser/branding/unofficial/configure.sh
+@@ -2,5 +2,6 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+-MOZ_APP_DISPLAYNAME=Nightly
+ MOZ_MACBUNDLE_ID=nightlyunofficial
++MOZ_APP_NAME=waterfox
++MOZ_APP_DISPLAYNAME=Waterfox

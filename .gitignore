@@ -1,0 +1,40 @@
+# Build outputs
+/output/
+/build/
+/obj/
+/dist/
+*.tar.xz
+*.tar.bz2
+*.tar.gz
+*.zip
+*.sha256
+.waterfox-commit
+.waterfox-version
+
+# Local source checkouts (bind-mounted, not committed)
+/waterfox-src/
+/waterfox/
+
+# Compiler caches
+/sccache/
+/.ccache/
+/.mozbuild/
+
+# Local mozconfig overrides (the template is committed; the generated one is not)
+/mozconfig
+/mozconfig.local
+
+# Editor / OS noise
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.code-workspace
+
+# Logs and diagnostics output
+*.log
+/wf-wayland.log
+/wf-scroll-diag.log

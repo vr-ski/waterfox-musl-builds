@@ -1,0 +1,212 @@
+name: Build Waterfox musl
+
+on:
+  workflow_dispatch:
+    inputs:
+      waterfox_tag:
+        description: "Waterfox release tag (e.g. 6.7.5). Empty = latest."
+        required: false
+        default: ""
+      nspr_version:
+        description: "NSPR version pin (e.g. 4.39). Empty = latest."
+        required: false
+        default: ""
+      do_release:
+        description: "Create a GitHub Release?"
+        type: boolean
+        required: true
+        default: false
+  schedule:
+    - cron: "0 3 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  source:
+    runs-on: [self-hosted, linux, x64, waterfox-builder]
+    outputs:
+      version: ${{ steps.fetch.outputs.WATERFOX_VERSION }}
+      commit:  ${{ steps.fetch.outputs.WATERFOX_COMMIT }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Fetch and patch source
+        id: fetch
+        run: |
+          chmod +x scripts/fetch-upstream.sh
+          CACHE=/var/cache/waterfox-builder
+          rm -rf "${CACHE}"/*
+          scripts/fetch-upstream.sh "${CACHE}/waterfox-src" "${{ inputs.waterfox_tag }}" >/dev/null
+          cd "${CACHE}/waterfox-src"
+          git checkout --force HEAD
+          git clean -fdx -e .waterfox-version
+          for p in "${{ github.workspace }}/patches"/*.patch; do
+            patch -p1 -t -N --forward < "$p" >/dev/null 2>&1 || true
+          done
+
+          echo "WATERFOX_VERSION=$(cat ${CACHE}/waterfox-src/.waterfox-version)" >> "$GITHUB_OUTPUT"
+          echo "WATERFOX_COMMIT=$(git rev-parse HEAD)"              >> "$GITHUB_OUTPUT"
+
+      - name: Produce source tarball
+        run: |
+          chmod +x scripts/make-source-tarball.sh
+          mkdir -p "${{ github.workspace }}/output"
+          SRC_DIR=/var/cache/waterfox-builder/waterfox-src \
+          OUT_DIR="${{ github.workspace }}/output" \
+            scripts/make-source-tarball.sh "${{ steps.fetch.outputs.WATERFOX_VERSION }}"
+
+      - name: Upload source tarball
+        uses: actions/upload-artifact@v7
+        with:
+          name: waterfox-source
+          path: |
+            output/waterfox-*-patched-source.tar.xz
+            output/waterfox-*-patched-source.tar.xz.sha256
+          retention-days: 14
+
+  build:
+    needs: [source]
+    runs-on: [self-hosted, linux, x64, waterfox-builder]
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        flavour: [wayland]
+        cpu_tier: [baseline, avx2]
+
+    env:
+      FLAVOUR: ${{ matrix.flavour }}
+      CPU_TIER: ${{ matrix.cpu_tier }}
+      SCCACHE_DIR: ${{ github.workspace }}/.sccache/${{ matrix.cpu_tier }}
+      SCCACHE_BASEDIRS: ${{ github.workspace }}
+
+    steps:
+      - name: Checkout pipeline repo
+        uses: actions/checkout@v7
+
+      - name: Prepare sccache directory
+        run: mkdir -p "$SCCACHE_DIR"
+
+      - name: Build image
+        run: podman build -t waterfox-musl-builder:latest .
+
+      - name: Run build
+        run: |
+          mkdir -vp "${{ github.workspace }}/output"
+          mkdir -vp "${{ github.workspace }}/build"
+          podman run --rm \
+            -e FLAVOUR \
+            -e CPU_TIER \
+            -e WATERFOX_COMMIT="${{ needs.source.outputs.commit }}" \
+            -e NSPR_VERSION="${{ inputs.nspr_version }}" \
+            -e SCCACHE_DIR=/sccache \
+            -e SCCACHE_BASEDIRS=/build \
+            -v /var/cache/waterfox-builder/waterfox-src:/build/waterfox \
+            -v "${{ github.workspace }}/build:/build/obj" \
+            -v "${{ github.workspace }}/output:/output" \
+            -v "$SCCACHE_DIR:/sccache" \
+            waterfox-musl-builder:latest \
+            sh /build/scripts/build.sh
+
+      - name: Upload artefact
+        uses: actions/upload-artifact@v7
+        with:
+          name: waterfox-musl-${{ matrix.flavour }}-${{ matrix.cpu_tier }}
+          path: |
+            output/*.tar.*
+            output/*.sha256
+            output/build-metadata-*.env
+          if-no-files-found: error
+          retention-days: 2
+
+  release:
+    needs: [source, build]
+    runs-on: [self-hosted, linux, x64, waterfox-builder]
+    if: github.event_name == 'workflow_dispatch' && inputs.do_release
+    steps:
+      - name: Download all artefacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artefacts
+          merge-multiple: true
+
+      - name: Assemble release notes
+        id: notes
+        run: |
+          TAG="${{ needs.source.outputs.version }}"
+          COMMIT="${{ needs.source.outputs.commit }}"
+          REPO="https://github.com/${{ github.repository }}"
+
+          {
+            echo "# Waterfox ${TAG} (musl + Wayland)"
+            echo ""
+            echo "Unofficial musl-linked build of Waterfox ${TAG}, built for Alpine Linux"
+            echo "and other musl distributions, with native Wayland support and X11 fallback."
+            echo ""
+            echo "## Upstream"
+            echo ""
+            echo "- Waterfox version: [${TAG}](https://github.com/BrowserWorks/waterfox/releases/tag/${TAG})"
+            echo "- Upstream commit: [\`$(printf '%s' "${COMMIT}" | cut -c1-7)\`](https://github.com/BrowserWorks/waterfox/commit/${COMMIT})"
+            echo ""
+            echo "## Build configuration"
+            echo ""
+            echo "- Target: \`x86_64-alpine-linux-musl\`"
+            echo "- Toolkit: \`cairo-gtk3-wayland\` (Wayland with X11 fallback)"
+            echo "- LTO: enabled (full, linked with \`lld\`)"
+            echo "- Optimisation: \`-O3 -march=x86-64-v3\` (avx2) or \`-O3 -march=x86-64-v2\` (baseline)"
+            echo "- System libraries: nss, nspr, icu, libjpeg, libwebp, libevent, zlib, ffi"
+            echo "- Disabled: jemalloc, crash reporter, updater, telemetry"
+            echo ""
+            echo "## Patches applied"
+            echo ""
+            echo "| Patch | Description |"
+            echo "|-------|-------------|"
+            while IFS=$'\t' read -r patch desc; do
+              [ -n "${patch}" ] || continue
+              echo "| [\`${patch}\`](${REPO}/blob/${TAG}/patches/${patch}) | ${desc} |"
+            done < patches/manifest.txt
+            echo ""
+            echo "## Binaries"
+            echo ""
+            echo "| Variant | File | SHA-256 |"
+            echo "|---------|------|---------|"
+            for f in artefacts/build-metadata-*.env; do
+              unset FLAVOUR CPU_TIER ARTEFACT SHA256
+              . "$f"
+              echo "| ${FLAVOUR} / ${CPU_TIER} | \`${ARTEFACT}\` | \`${SHA256}\` |"
+            done
+            echo ""
+            echo "## Corresponding source"
+            echo ""
+            echo "The complete source tree used to build these binaries is attached to this"
+            echo "release as \`waterfox-${TAG}-patched-source.tar.xz\`. It contains the Waterfox"
+            echo "source at the upstream commit above with the patches in \`patches/\` applied."
+            echo ""
+            echo "## Known limitations"
+            echo ""
+            echo "- The crash reporter and automatic updater are disabled. Updates must be"
+            echo "  downloaded manually."
+            echo "- Firefox Sync and DRM playback are untested on musl."
+            echo ""
+            echo "## Licence"
+            echo ""
+            echo "Build tooling is BSD 2-Clause licensed (see [\`LICENSE\`](${REPO}/blob/${TAG}/LICENSE))."
+            echo "Waterfox source and patched files are MPL 2.0 (see [\`LICENSE-MPL\`](${REPO}/blob/${TAG}/LICENSE-MPL))."
+          } > release-notes.md
+
+          cat release-notes.md
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ needs.source.outputs.version }}"
+          RELEASE="${TAG}"
+
+          gh release create "$RELEASE" \
+            --draft \
+            --target "${{ github.sha }}" \
+            --title "Waterfox ${TAG}" \
+            --notes-file release-notes.md \
+            artefacts/*.tar.xz artefacts/*.sha256

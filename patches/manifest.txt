@@ -1,0 +1,6 @@
+disable-glean-sdk.patch	Removes the optional glean-sdk Python dependency from python/sites/mach.txt; it cannot be built on musl
+fix-hunspell-header.patch	Guards a hunspell declaration behind #ifndef MOZILLA_CLIENT to avoid a conflicting redeclaration in the Firefox build
+fix-musl-redefined-prctl_mm_map.patch	Drops the <linux/prctl.h> include in libwebrtc, whose contents conflict with musl's <sys/prctl.h>
+fix-product-name.patch	Sets MOZ_APP_NAME and MOZ_APP_DISPLAYNAME to waterfox / Waterfox for the unofficial branding
+fix-rust-target.patch	Replaces Mozilla's automatic rustc target detection with a RUST_TARGET environment override
+sandbox-sched_setscheduler.patch	Allows sched_setscheduler in the GMP and RDD sandbox policies (upstream bug 1657849)

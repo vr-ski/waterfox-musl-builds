@@ -1,0 +1,23 @@
+Waterfox (musl + Wayland) build pipeline
+Copyright (c) 2026 vr-ski
+
+This repository builds an unofficial binary of Waterfox from the Waterfox
+source tree published by BrowserWorks, with the patches in `patches/`
+applied. The patched source tree used to produce released binaries can be
+reconstructed by applying those patches to the upstream commit recorded
+in the `UPSTREAM_COMMIT` file at the root of this repository.
+
+Waterfox is a trademark of BrowserWorks. This project is not affiliated
+with, endorsed by, or supported by BrowserWorks.
+
+Firefox and the Firefox logo are trademarks of the Mozilla Foundation.
+Portions of this build derive from the Mozilla Firefox source code,
+distributed under the Mozilla Public License 2.0.
+
+Waterfox source code, and any patched files derived from it, are governed
+by the Mozilla Public License 2.0. A copy of the MPL is included in this
+repository as LICENSE-MPL.
+
+The build pipeline, Dockerfile, mozconfig template, and scripts in this
+repository are licensed under the BSD2-clause License and are not derived from
+MPL-licensed code. See LICENSE.
