@@ -1,5 +1,7 @@
 # Waterfox musl builds
 
+[![Build Waterfox musl](https://github.com/vr-ski/waterfox-musl-builds/actions/workflows/build.yml/badge.svg)](https://github.com/vr-ski/waterfox-musl-builds/actions/workflows/build.yml) [![Latest Release](https://img.shields.io/github/v/release/vr-ski/waterfox-musl-builds)](https://github.com/vr-ski/waterfox-musl-builds/releases) [![Last Commit](https://img.shields.io/github/last-commit/vr-ski/waterfox-musl-builds)](https://github.com/vr-ski/waterfox-musl-builds/commits/main) [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0) [![License: BSD-2-Clause](https://img.shields.io/badge/License-BSD%202--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause) 
+
 Unofficial musl builds of [Waterfox](https://www.waterfox.com/), built in Alpine Linux containers and packaged as portable tarballs.
 The official Waterfox project distributes glibc builds only. This project fills that gap for musl-based distributions.
 
