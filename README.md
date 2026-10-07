@@ -1,4 +1,3 @@
-```markdown
 # Waterfox musl builds
 
 Unofficial musl builds of [Waterfox](https://www.waterfox.com/), built in Alpine Linux containers and packaged as portable tarballs.
@@ -173,4 +172,3 @@ This project builds Waterfox from source. Waterfox is distributed under the Mozi
 This is not an official Waterfox release. 
 For bug reports about the browser itself, use the [upstream issue tracker](https://github.com/BrowserWorks/waterfox/issues).
 For issues with the musl build specifically, open an issue [here](../../issues).
-```
