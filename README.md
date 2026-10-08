@@ -129,6 +129,7 @@ podman run ... -e NSPR_VERSION=4.39 ...
 ## Patches applied
 
 Waterfox's source is written for glibc. Alpine's musl patch set for Firefox covers most of the gap, but Waterfox differs in a few places. The patches in `patches/` handle:
+
 | Patch | Description |
 |-------|-------------|
 | `disable-glean-sdk.patch` | Removes the optional glean-sdk Python dependency from `python/sites/mach.txt`; it cannot be built on musl. |
