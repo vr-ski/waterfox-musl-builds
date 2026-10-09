@@ -33,6 +33,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.code-workspace
+.venv
 
 # Logs and diagnostics output
 *.log

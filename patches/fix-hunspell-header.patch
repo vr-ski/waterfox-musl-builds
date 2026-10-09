@@ -4,12 +4,12 @@ index 362fadfd26..efdb651425 100644
 +++ b/extensions/spellcheck/hunspell/src/csutil.hxx
 @@ -124,8 +124,10 @@
  #define ONLYUPCASEFLAG 65511
- 
+
  // fix long pathname problem of WIN32 by using w_char std::fstream::open override
 +#ifndef MOZILLA_CLIENT
  LIBHUNSPELL_DLL_EXPORTED void myopen(std::ifstream& stream, const char* path,
                                       std::ios_base::openmode mode);
 +#endif
- 
+
  // convert UTF-16 characters to UTF-8
  LIBHUNSPELL_DLL_EXPORTED std::string& u16_u8(std::string& dest,

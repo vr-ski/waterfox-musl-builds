@@ -6,7 +6,10 @@ SRC_DIR="${SRC_DIR:-/build/waterfox}"
 OUT_DIR="${OUT_DIR:-/output}"
 
 log() { printf '[source-tarball] %s\n' "$*" >&2; }
-die() { log "ERROR: $*"; exit 1; }
+die() {
+  log "ERROR: $*"
+  exit 1
+}
 
 [ -d "${SRC_DIR}" ] || die "source tree not found at ${SRC_DIR}"
 mkdir -p "${OUT_DIR}"
@@ -21,14 +24,14 @@ trap 'rm -rf "${STAGE}"' EXIT
 cp -al "${SRC_DIR}" "${STAGE}/waterfox-${VERSION}"
 
 # Remove things that should not ship, from the staging copy only.
-rm -f  "${STAGE}/waterfox-${VERSION}/.waterfox-version"
+rm -f "${STAGE}/waterfox-${VERSION}/.waterfox-version"
 rm -rf "${STAGE}/waterfox-${VERSION}/.git"
-rm -f  "${STAGE}/waterfox-${VERSION}/.mozconfig"
+rm -f "${STAGE}/waterfox-${VERSION}/.mozconfig"
 
 # Archive from the staging directory.
 tar -C "${STAGE}" -cJf "${TARBALL}" "waterfox-${VERSION}"
 
-sha256sum "${TARBALL}" > "${TARBALL}.sha256"
+sha256sum "${TARBALL}" >"${TARBALL}.sha256"
 
 log "Wrote ${TARBALL}"
 log "Wrote ${TARBALL}.sha256"

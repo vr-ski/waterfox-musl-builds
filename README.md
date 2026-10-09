@@ -1,6 +1,6 @@
 # Waterfox musl builds
 
-[![Build Waterfox musl](https://github.com/vr-ski/waterfox-musl-builds/actions/workflows/build.yml/badge.svg)](https://github.com/vr-ski/waterfox-musl-builds/actions/workflows/build.yml) [![Latest Release](https://img.shields.io/github/v/release/vr-ski/waterfox-musl-builds)](https://github.com/vr-ski/waterfox-musl-builds/releases) [![Last Commit](https://img.shields.io/github/last-commit/vr-ski/waterfox-musl-builds)](https://github.com/vr-ski/waterfox-musl-builds/commits/main) [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0) [![License: BSD-2-Clause](https://img.shields.io/badge/License-BSD%202--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause) 
+[![Build Waterfox musl](https://github.com/vr-ski/waterfox-musl-builds/actions/workflows/build.yml/badge.svg)](https://github.com/vr-ski/waterfox-musl-builds/actions/workflows/build.yml) [![Latest Release](https://img.shields.io/github/v/release/vr-ski/waterfox-musl-builds)](https://github.com/vr-ski/waterfox-musl-builds/releases) [![Last Commit](https://img.shields.io/github/last-commit/vr-ski/waterfox-musl-builds)](https://github.com/vr-ski/waterfox-musl-builds/commits/main) [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0) [![License: BSD-2-Clause](https://img.shields.io/badge/License-BSD%202--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 Unofficial musl builds of [Waterfox](https://www.waterfox.com/), built in Alpine Linux containers and packaged as portable tarballs.
 The official Waterfox project distributes glibc builds only. This project fills that gap for musl-based distributions.
@@ -63,8 +63,8 @@ To build a different flavour, change `FLAVOUR` and `CPU_TIER`. Valid values:
 - `FLAVOUR`: `x11`, `wayland`
 - `CPU_TIER`: `baseline`, `avx2`
 
-`FLAVOUR` accepts `wayland` or `x11`. The Wayland build includes X11 fallback, so `wayland` is used in the release pipeline to covers both protocols, `x11` can be used manually for a pure x11 build. 
-`CPU_TIER` accepts `baseline` (x86-64-v2) or `avx2` (x86-64-v3). 
+`FLAVOUR` accepts `wayland` or `x11`. The Wayland build includes X11 fallback, so `wayland` is used in the release pipeline to covers both protocols, `x11` can be used manually for a pure x11 build.
+`CPU_TIER` accepts `baseline` (x86-64-v2) or `avx2` (x86-64-v3).
 Leave `NSPR_VERSION` empty to use the NSPR that ships with the source tree, or set it to a specific version (e.g. `4.39`) to pin.
 
 The resulting tarball lands in `output/`:
@@ -172,6 +172,6 @@ sccache is used to speed up repeated builds. Its cache lives under the runner's 
 
 This project builds Waterfox from source. Waterfox is distributed under the Mozilla Public License 2.0. The build scripts, patches, and configuration in this repository are provided under the BSD2-clause license.
 
-This is not an official Waterfox release. 
+This is not an official Waterfox release.
 For bug reports about the browser itself, use the [upstream issue tracker](https://github.com/BrowserWorks/waterfox/issues).
 For issues with the musl build specifically, open an issue [here](../../issues).

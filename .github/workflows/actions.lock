@@ -7,6 +7,9 @@ workflows:
         - 'actions/checkout@v7.0.1'
         - 'actions/download-artifact@v8.0.2'
         - 'actions/upload-artifact@v7.0.2'
+    '.github/workflows/ci.yml':
+        - 'actions/checkout@v7.0.1'
+        - 'ludeeus/action-shellcheck@master'
     '.github/workflows/docs.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-python@v7.0.0'
@@ -31,3 +34,8 @@ dependencies:
         commit: 'sha1-cf430e030ddbb5b0abf93d22962f4752f3646cd9'
         owner_id: 44036562
         repo_id: 192625955
+    'ludeeus/action-shellcheck@master':
+        ref: 'master'
+        commit: 'sha1-00b27aa7cb85167568cb48a3838b75f4265f2bca'
+        owner_id: 15093472
+        repo_id: 174679242

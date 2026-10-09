@@ -1,0 +1,40 @@
+# This workflow is managed by gh actions-lock.
+
+name: CI - ShellCheck and shfmt
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  shfmt:
+    name: shfmt
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v7.0.1
+
+    - name: Install shfmt
+      run: sudo apt update && sudo apt install shfmt
+
+    - name: Show formatting differences
+      run: shfmt -d -s -i 2 -ci -bn .
+
+    - name: Apply fixes
+      run: shfmt -w -s -i 2 -ci -bn .
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7.0.1
+
+    - name: Run ShellCheck
+      uses: ludeeus/action-shellcheck@master
+      env:
+        SHELLCHECK_OPTS: "-s sh -a -o all -f gcc -e SC3040"
