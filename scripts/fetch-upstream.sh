@@ -25,22 +25,25 @@ WANT_TAG="${2:-}"
 VERSION_FILE="${TARGET}/.waterfox-version"
 
 log() { printf '[fetch-upstream] %s\n' "$*" >&2; }
-die() { log "ERROR: $*"; exit "${2:-1}"; }
+die() {
+  log "ERROR: $*"
+  exit "${2:-1}"
+}
 
 # ---------------------------------------------------------------------------
 # 1. Resolve the tag
 # ---------------------------------------------------------------------------
 if [ -n "${WANT_TAG}" ]; then
-    TAG="${WANT_TAG}"
-    log "Using caller-provided tag: ${TAG}"
+  TAG="${WANT_TAG}"
+  log "Using caller-provided tag: ${TAG}"
 else
-    log "Querying GitHub for the latest release of ${REPO}"
-    TAG=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
-        | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -1) \
-        || die "GitHub API query failed" 1
+  log "Querying GitHub for the latest release of ${REPO}"
+  TAG=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
+    | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -1) \
+    || die "GitHub API query failed" 1
 
-    [ -n "${TAG}" ] || die "API returned no tag_name" 1
-    log "Latest release tag: ${TAG}"
+  [ -n "${TAG}" ] || die "API returned no tag_name" 1
+  log "Latest release tag: ${TAG}"
 fi
 
 # ---------------------------------------------------------------------------
@@ -54,40 +57,40 @@ export GIT_CONFIG_KEY_0="url.https://github.com/.insteadOf"
 export GIT_CONFIG_VALUE_0="git@github.com:"
 
 if [ -d "${TARGET}/.git" ]; then
-    cd "${TARGET}"
-    git fetch --depth 1 origin "refs/tags/${TAG}:refs/tags/${TAG}"
-    git checkout --force "${TAG}"
-    git clean -fdx
-    git submodule sync --recursive
-    git submodule foreach --recursive 'git reset --hard && git clean -fdx'
-    git submodule update --init --recursive
-    grep -qxF '.waterfox-version' "${TARGET}/.git/info/exclude" 2>/dev/null \
-    || echo '.waterfox-version' >> "${TARGET}/.git/info/exclude"
-    printf '%s\n' "${TAG}" > "${VERSION_FILE}"
+  cd "${TARGET}"
+  git fetch --depth 1 origin "refs/tags/${TAG}:refs/tags/${TAG}"
+  git checkout --force "${TAG}"
+  git clean -fdx
+  git submodule sync --recursive
+  git submodule foreach --recursive 'git reset --hard && git clean -fdx'
+  git submodule update --init --recursive
+  grep -qxF '.waterfox-version' "${TARGET}/.git/info/exclude" 2>/dev/null \
+    || echo '.waterfox-version' >>"${TARGET}/.git/info/exclude"
+  printf '%s\n' "${TAG}" >"${VERSION_FILE}"
 else
-    git clone \
-        -c url."https://github.com/".insteadOf="git@github.com:" \
-        -c advice.detachedHead=false \
-        --recurse-submodules \
-        --shallow-submodules \
-        --depth 1 \
-        --branch "${TAG}" \
-        "https://github.com/${REPO}.git" "${TARGET}" \
-        || die "git clone failed" 2
-    cd "${TARGET}"
-    git fetch --depth 1 origin "refs/tags/${TAG}:refs/tags/${TAG}" || true
+  git clone \
+    -c 'url.https://github.com/.insteadOf=git@github.com:' \
+    -c advice.detachedHead=false \
+    --recurse-submodules \
+    --shallow-submodules \
+    --depth 1 \
+    --branch "${TAG}" \
+    "https://github.com/${REPO}.git" "${TARGET}" \
+    || die "git clone failed" 2
+  cd "${TARGET}"
+  git fetch --depth 1 origin "refs/tags/${TAG}:refs/tags/${TAG}" || true
 fi
 # ---------------------------------------------------------------------------
 # 3. Record the resolved identity
 # ---------------------------------------------------------------------------
 COMMIT=$(git rev-parse "refs/tags/${TAG}^{commit}")
 
-printf '%s\n' "${COMMIT}" > "${TARGET}/.waterfox-commit"
-printf '%s\n' "${TAG}" > "${VERSION_FILE}"
+printf '%s\n' "${COMMIT}" >"${TARGET}/.waterfox-commit"
+printf '%s\n' "${TAG}" >"${VERSION_FILE}"
 
 log "Tag:    ${TAG}"
 log "Commit: ${COMMIT}"
-log "Tree:   $(pwd)"
+log "Tree:   ${PWD}"
 log "Wrote ${VERSION_FILE}"
 
 # Emit machine-readable values on stdout for use by callers.

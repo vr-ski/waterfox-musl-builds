@@ -1,0 +1,28 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: detect-private-key
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.14.1-1
+    hooks:
+      - id: shfmt #show
+        args: ["-d", "-s", "-i", "2", "-ci", "-bn"]
+      - id: shfmt #apply
+        args: ["-w", "-s", "-i", "2", "-ci", "-bn"]
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.11.0
+    hooks:
+      - id: shellcheck
+        entry: sh -c 'shellcheck -s sh -a -o all -f gcc -e SC3040 "${@}"' --
+        language: system
+        types: [shell]
+        pass_filenames: true
