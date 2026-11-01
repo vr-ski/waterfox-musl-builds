@@ -1,3 +1,5 @@
+# This workflow is managed by gh actions-lock.
+
 name: Manual Waterfox musl build
 
 on:
@@ -29,7 +31,7 @@ permissions:
 
 jobs:
   build:
-    uses: ./.github/workflows/build_reusable.yml
+    uses: $/.github/workflows/build_reusable.yml
     with:
       waterfox_tag: ${{ inputs.waterfox_tag }}
       nspr_version: ${{ inputs.nspr_version }}
