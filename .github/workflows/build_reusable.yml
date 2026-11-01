@@ -9,15 +9,17 @@ on:
         description: "Waterfox release tag (e.g. 6.7.5). Empty = latest."
         required: false
         default: ""
+        type: string
       nspr_version:
         description: "NSPR version pin (e.g. 4.39). Empty = latest."
         required: false
         default: ""
+        type: string
       do_release:
         description: "Create a GitHub Release?"
-        type: boolean
         required: true
         default: false
+        type: boolean
       draft_release:
         description: "Create the release as a draft?"
         required: true
