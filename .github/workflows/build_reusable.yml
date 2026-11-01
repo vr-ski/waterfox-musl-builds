@@ -3,7 +3,7 @@
 name: Build Waterfox musl
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       waterfox_tag:
         description: "Waterfox release tag (e.g. 6.7.5). Empty = latest."
@@ -18,8 +18,11 @@ on:
         type: boolean
         required: true
         default: false
-  schedule:
-    - cron: "0 3 * * 1"
+      draft_release:
+        description: "Create the release as a draft?"
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -125,7 +128,7 @@ jobs:
   release:
     needs: [source, build]
     runs-on: [self-hosted, linux, x64, waterfox-builder]
-    if: github.event_name == 'workflow_dispatch' && inputs.do_release
+    if: inputs.do_release
     steps:
       - name: Download all artefacts
         uses: actions/download-artifact@v8.0.2
@@ -206,8 +209,12 @@ jobs:
           TAG="${{ needs.source.outputs.version }}"
           RELEASE="${TAG}"
 
-          gh release create "$RELEASE" \
-            --draft \
+          if [[ "${{ inputs.draft_release }}" == "true" ]]; then
+            DRAFT_RELEASE="--draft"
+          fi
+
+          gh release create "${RELEASE}" \
+            ${DRAFT_RELEASE} \
             --target "${{ github.sha }}" \
             --title "Waterfox ${TAG}" \
             --notes-file release-notes.md \

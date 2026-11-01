@@ -1,0 +1,39 @@
+name: Manual Waterfox musl build
+
+on:
+  workflow_dispatch:
+    inputs:
+      waterfox_tag:
+        description: "Waterfox release tag (e.g. 6.7.5). Empty = latest."
+        required: false
+        default: ""
+        type: string
+      nspr_version:
+        description: "NSPR version pin (e.g. 4.39). Empty = latest."
+        required: false
+        default: ""
+        type: string
+      do_release:
+        description: "Create a GitHub Release?"
+        required: true
+        default: true
+        type: boolean
+      draft_release:
+        description: "Create the release as a draft?"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/build_reusable.yml
+    with:
+      waterfox_tag: ${{ inputs.waterfox_tag }}
+      nspr_version: ${{ inputs.nspr_version }}
+      do_release: ${{ inputs.do_release }}
+      draft_release: ${{ inputs.draft_release }} 
+
+    secrets: inherit
